@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>2024 Bulletins</title>
+  <style>:root {
+  --bg: #f7f7f2;
+  --panel: #ffffff;
+  --ink: #1e2421;
+  --muted: #617069;
+  --line: #d7ddd7;
+  --accent: #005f73;
+  --accent-soft: #e8f4f6;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  background: linear-gradient(180deg, #f7f7f2 0%, #eef3ef 100%);
+  color: var(--ink);
+}
+.wrapper {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 18px 42px;
+}
+.header {
+  margin-bottom: 24px;
+}
+.header h1 {
+  margin: 0;
+  font-size: 2.1rem;
+  letter-spacing: 0.3px;
+}
+.subtitle {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(21, 28, 25, 0.05);
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.list li:last-child { border-bottom: 0; }
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+.badge {
+  display: inline-block;
+  font-size: 0.82rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid #c7e4ea;
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-left: 8px;
+}
+.kv {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 4px;
+}
+.cve-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.desc {
+  margin: 8px 0 0;
+  line-height: 1.45;
+}
+.footer {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+@media (max-width: 700px) {
+  .header h1 { font-size: 1.7rem; }
+}</style>
+</head>
+<body>
+  <main class="wrapper">
+    <header class="header">
+      <h1>2024 Bulletins</h1>
+      <p class="subtitle">Bulletins with filtered memory-safety CVEs</p>
+    </header>
+    <section class="panel"><a href="../index.html">Back to Home</a></section>
+<section class="panel">
+<ul class="list">
+<li><a href="./5510/index.html">Bulletin 5510</a><span class="badge">4 CVEs</span></li>
+<li><a href="./5513/index.html">Bulletin 5513</a><span class="badge">6 CVEs</span></li>
+<li><a href="./5520/index.html">Bulletin 5520</a><span class="badge">1 CVEs</span></li>
+<li><a href="./5548/index.html">Bulletin 5548</a><span class="badge">1 CVEs</span></li>
+<li><a href="./5551/index.html">Bulletin 5551</a><span class="badge">2 CVEs</span></li>
+<li><a href="./5557/index.html">Bulletin 5557</a><span class="badge">1 CVEs</span></li>
+<li><a href="./5564/index.html">Bulletin 5564</a><span class="badge">1 CVEs</span></li>
+<li><a href="./5565/index.html">Bulletin 5565</a><span class="badge">1 CVEs</span></li>
+<li><a href="./5577/index.html">Bulletin 5577</a><span class="badge">1 CVEs</span></li>
+<li><a href="./5586/index.html">Bulletin 5586</a><span class="badge">5 CVEs</span></li>
+</ul>
+</section>
+    <footer class="footer">Generated from filter folder for GitHub Pages.</footer>
+  </main>
+</body>
+</html>

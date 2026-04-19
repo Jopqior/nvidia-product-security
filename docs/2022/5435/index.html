@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Security Bulletin: NVIDIA DGX A100 Server and DGX Station A100 - December 2022</title>
+  <style>:root {
+  --bg: #f7f7f2;
+  --panel: #ffffff;
+  --ink: #1e2421;
+  --muted: #617069;
+  --line: #d7ddd7;
+  --accent: #005f73;
+  --accent-soft: #e8f4f6;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  background: linear-gradient(180deg, #f7f7f2 0%, #eef3ef 100%);
+  color: var(--ink);
+}
+.wrapper {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 18px 42px;
+}
+.header {
+  margin-bottom: 24px;
+}
+.header h1 {
+  margin: 0;
+  font-size: 2.1rem;
+  letter-spacing: 0.3px;
+}
+.subtitle {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(21, 28, 25, 0.05);
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.list li:last-child { border-bottom: 0; }
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+.badge {
+  display: inline-block;
+  font-size: 0.82rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid #c7e4ea;
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-left: 8px;
+}
+.kv {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 4px;
+}
+.cve-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.desc {
+  margin: 8px 0 0;
+  line-height: 1.45;
+}
+.footer {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+@media (max-width: 700px) {
+  .header h1 { font-size: 1.7rem; }
+}</style>
+</head>
+<body>
+  <main class="wrapper">
+    <header class="header">
+      <h1>Security Bulletin: NVIDIA DGX A100 Server and DGX Station A100 - December 2022</h1>
+      <p class="subtitle">Filtered CVE list for bulletin 2022/5435</p>
+    </header>
+    <section class="panel"><a href="../index.html">Back to Year</a> | <a href="../../index.html">Home</a></section>
+<section class="panel">
+<div class="kv">Year: 2022 | Bulletin: 5435</div>
+<div class="kv">Updated: 2023-01-10T00:00:00Z</div>
+<div class="kv">CVEs in filter: 6</div>
+</section>
+<section class="panel">
+<h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-42271" target="_blank" rel="noopener">CVE-2022-42271</a> <span class="badge">CWE-120</span></h2>
+<p class="desc">NVIDIA baseboard management controller (BMC) contains a vulnerability in the Intelligent Platform Management Interface (IPMI) handler, where an attacker with the required privileges can cause a buffer overflow, which may lead to denial of service or code execution.</p>
+</section>
+<section class="panel">
+<h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-42272" target="_blank" rel="noopener">CVE-2022-42272</a> <span class="badge">CWE-120</span></h2>
+<p class="desc">NVIDIA BMC contains a vulnerability in the IPMI handler, where an attacker with the required privileges can cause a buffer overflow, which may lead to code execution, denial of service, or escalation of privileges.</p>
+</section>
+<section class="panel">
+<h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-42273" target="_blank" rel="noopener">CVE-2022-42273</a> <span class="badge">CWE-120</span></h2>
+<p class="desc">NVIDIA BMC contains a vulnerability in libwebsocket, where an attacker with the required privileges can cause a buffer overflow, which may lead to denial of service or code execution.</p>
+</section>
+<section class="panel">
+<h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-42274" target="_blank" rel="noopener">CVE-2022-42274</a> <span class="badge">CWE-120</span></h2>
+<p class="desc">NVIDIA BMC contains a vulnerability in the IPMI handler, where an attacker with the required privileges can cause a buffer overflow, which may lead to denial of service or code execution.</p>
+</section>
+<section class="panel">
+<h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-42281" target="_blank" rel="noopener">CVE-2022-42281</a> <span class="badge">CWE-787</span></h2>
+<p class="desc">NVIDIA DGX A100 contains a vulnerability in SBIOS in the FsRecovery, which may allow a highly privileged local attacker to cause an out-of-bounds write, which may lead to code execution, denial of service, loss of data integrity, or information disclosure.</p>
+</section>
+<section class="panel">
+<h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-42283" target="_blank" rel="noopener">CVE-2022-42283</a> <span class="badge">CWE-120</span></h2>
+<p class="desc">NVIDIA BMC contains a vulnerability in the IPMI handler, where an attacker with the required privileges can cause a buffer overflow, which may lead to denial of service or code execution.</p>
+</section>
+    <footer class="footer">Generated from filter folder for GitHub Pages.</footer>
+  </main>
+</body>
+</html>

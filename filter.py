@@ -165,6 +165,10 @@ def process_bulletin(source_root: Path, out_root: Path, bulletin_dir: Path) -> B
     filter_markdown_file(md_path, kept_cves)
     delete_filtered_cve_files(destination, kept_cves)
 
+    if not kept_cves:
+        shutil.rmtree(destination)
+        return None
+
     return BulletinResult(
         year=year,
         bulletin=bulletin,
