@@ -45,6 +45,36 @@ body {
   margin-bottom: 16px;
   box-shadow: 0 2px 12px rgba(21, 28, 25, 0.05);
 }
+.search-panel {
+    display: grid;
+    gap: 8px;
+}
+.search-label {
+    font-size: 0.92rem;
+    color: var(--muted);
+}
+.search-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--ink);
+    background: #fff;
+}
+.search-input:focus {
+    outline: 2px solid rgba(0, 95, 115, 0.18);
+    border-color: var(--accent);
+}
+.search-hint {
+    font-size: 0.86rem;
+    color: var(--muted);
+}
+.search-empty {
+    display: none;
+    color: var(--muted);
+    margin-top: 12px;
+}
 .list {
   list-style: none;
   margin: 0;
@@ -83,6 +113,9 @@ a:hover { text-decoration: underline; }
   margin: 8px 0 0;
   line-height: 1.45;
 }
+.search-hidden {
+    display: none !important;
+}
 .footer {
   margin-top: 28px;
   color: var(--muted);
@@ -91,6 +124,48 @@ a:hover { text-decoration: underline; }
 @media (max-width: 700px) {
   .header h1 { font-size: 1.7rem; }
 }</style>
+  <script>
+function normalizeText(value) {
+    return (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function attachSearch(inputId, itemSelector, emptyId) {
+    const input = document.getElementById(inputId);
+    if (!input) {
+        return;
+    }
+
+    const emptyState = emptyId ? document.getElementById(emptyId) : null;
+    const items = Array.from(document.querySelectorAll(itemSelector));
+
+    function applyFilter() {
+        const query = normalizeText(input.value);
+        let visibleCount = 0;
+
+        for (const item of items) {
+            const haystack = normalizeText(item.getAttribute('data-search') || item.textContent);
+            const matches = !query || haystack.includes(query);
+            item.classList.toggle('search-hidden', !matches);
+            if (matches) {
+                visibleCount += 1;
+            }
+        }
+
+        if (emptyState) {
+            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+
+    input.addEventListener('input', applyFilter);
+    applyFilter();
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+    attachSearch('home-search', '.home-item', 'home-empty');
+    attachSearch('year-search', '.year-item', 'year-empty');
+    attachSearch('bulletin-search', '.bulletin-item', 'bulletin-empty');
+});
+</script>
 </head>
 <body>
   <main class="wrapper">
@@ -98,13 +173,19 @@ a:hover { text-decoration: underline; }
       <h1>NVIDIA Product Security - Filtered CVEs</h1>
       <p class="subtitle">Memory-safety related CVEs generated from the filter folder</p>
     </header>
-    <section class="panel">
+    <section class="panel search-panel">
+<label class="search-label" for="home-search">Search years</label>
+<input id="home-search" class="search-input" type="search" placeholder="Search by year, bulletin count, or CVE count">
+<div class="search-hint">Filters the year list on the home page.</div>
+<div id="home-empty" class="search-empty">No matching years found.</div>
+</section>
+<section class="panel">
 <ul class="list">
-<li><a href="./2022/index.html">2022</a><span class="badge">11 bulletins</span><span class="badge">37 CVEs</span></li>
-<li><a href="./2023/index.html">2023</a><span class="badge">10 bulletins</span><span class="badge">23 CVEs</span></li>
-<li><a href="./2024/index.html">2024</a><span class="badge">10 bulletins</span><span class="badge">23 CVEs</span></li>
-<li><a href="./2025/index.html">2025</a><span class="badge">11 bulletins</span><span class="badge">49 CVEs</span></li>
-<li><a href="./2026/index.html">2026</a><span class="badge">1 bulletins</span><span class="badge">2 CVEs</span></li>
+<li class="home-item" data-search="2022 11 bulletins 37 CVEs"><a href="./2022/index.html">2022</a><span class="badge">11 bulletins</span><span class="badge">37 CVEs</span></li>
+<li class="home-item" data-search="2023 10 bulletins 23 CVEs"><a href="./2023/index.html">2023</a><span class="badge">10 bulletins</span><span class="badge">23 CVEs</span></li>
+<li class="home-item" data-search="2024 10 bulletins 23 CVEs"><a href="./2024/index.html">2024</a><span class="badge">10 bulletins</span><span class="badge">23 CVEs</span></li>
+<li class="home-item" data-search="2025 11 bulletins 49 CVEs"><a href="./2025/index.html">2025</a><span class="badge">11 bulletins</span><span class="badge">49 CVEs</span></li>
+<li class="home-item" data-search="2026 1 bulletins 2 CVEs"><a href="./2026/index.html">2026</a><span class="badge">1 bulletins</span><span class="badge">2 CVEs</span></li>
 </ul>
 </section>
     <footer class="footer">Generated from filter folder for GitHub Pages.</footer>

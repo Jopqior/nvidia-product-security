@@ -45,6 +45,36 @@ body {
   margin-bottom: 16px;
   box-shadow: 0 2px 12px rgba(21, 28, 25, 0.05);
 }
+.search-panel {
+    display: grid;
+    gap: 8px;
+}
+.search-label {
+    font-size: 0.92rem;
+    color: var(--muted);
+}
+.search-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--ink);
+    background: #fff;
+}
+.search-input:focus {
+    outline: 2px solid rgba(0, 95, 115, 0.18);
+    border-color: var(--accent);
+}
+.search-hint {
+    font-size: 0.86rem;
+    color: var(--muted);
+}
+.search-empty {
+    display: none;
+    color: var(--muted);
+    margin-top: 12px;
+}
 .list {
   list-style: none;
   margin: 0;
@@ -83,6 +113,9 @@ a:hover { text-decoration: underline; }
   margin: 8px 0 0;
   line-height: 1.45;
 }
+.search-hidden {
+    display: none !important;
+}
 .footer {
   margin-top: 28px;
   color: var(--muted);
@@ -91,6 +124,48 @@ a:hover { text-decoration: underline; }
 @media (max-width: 700px) {
   .header h1 { font-size: 1.7rem; }
 }</style>
+  <script>
+function normalizeText(value) {
+    return (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function attachSearch(inputId, itemSelector, emptyId) {
+    const input = document.getElementById(inputId);
+    if (!input) {
+        return;
+    }
+
+    const emptyState = emptyId ? document.getElementById(emptyId) : null;
+    const items = Array.from(document.querySelectorAll(itemSelector));
+
+    function applyFilter() {
+        const query = normalizeText(input.value);
+        let visibleCount = 0;
+
+        for (const item of items) {
+            const haystack = normalizeText(item.getAttribute('data-search') || item.textContent);
+            const matches = !query || haystack.includes(query);
+            item.classList.toggle('search-hidden', !matches);
+            if (matches) {
+                visibleCount += 1;
+            }
+        }
+
+        if (emptyState) {
+            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+
+    input.addEventListener('input', applyFilter);
+    applyFilter();
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+    attachSearch('home-search', '.home-item', 'home-empty');
+    attachSearch('year-search', '.year-item', 'year-empty');
+    attachSearch('bulletin-search', '.bulletin-item', 'bulletin-empty');
+});
+</script>
 </head>
 <body>
   <main class="wrapper">
@@ -99,32 +174,38 @@ a:hover { text-decoration: underline; }
       <p class="subtitle">Filtered CVE list for bulletin 2022/5383</p>
     </header>
     <section class="panel"><a href="../index.html">Back to Year</a> | <a href="../../index.html">Home</a></section>
+<section class="panel search-panel">
+<label class="search-label" for="bulletin-search">Search CVEs</label>
+<input id="bulletin-search" class="search-input" type="search" placeholder="Search by CVE, CWE, or description">
+<div class="search-hint">Filters the CVE cards on this bulletin page.</div>
+<div id="bulletin-empty" class="search-empty">No matching CVEs found.</div>
+</section>
 <section class="panel">
 <div class="kv">Year: 2022 | Bulletin: 5383</div>
 <div class="kv">Updated: 2022-08-16T00:00:00Z</div>
 <div class="kv">CVEs in filter: 6</div>
 </section>
-<section class="panel">
+<section class="panel bulletin-item" data-search="CVE-2022-31606 CWE-787 NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys) handler for DxgkDdiEscape, where a failure to properly validate data might allow an attacker with basic user capabilities to cause an out-of-bounds access in kernel mode, which could lead to denial of service, information disclosure, escalation of privileges, or data tampering.">
 <h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-31606" target="_blank" rel="noopener">CVE-2022-31606</a> <span class="badge">CWE-787</span></h2>
 <p class="desc">NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys) handler for DxgkDdiEscape, where a failure to properly validate data might allow an attacker with basic user capabilities to cause an out-of-bounds access in kernel mode, which could lead to denial of service, information disclosure, escalation of privileges, or data tampering.</p>
 </section>
-<section class="panel">
+<section class="panel bulletin-item" data-search="CVE-2022-31610 CWE-787 NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys), where a local user with basic capabilities can cause an out-of-bounds write, which may lead to code execution, denial of service, escalation of privileges, information disclosure, or data tampering.">
 <h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-31610" target="_blank" rel="noopener">CVE-2022-31610</a> <span class="badge">CWE-787</span></h2>
 <p class="desc">NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys), where a local user with basic capabilities can cause an out-of-bounds write, which may lead to code execution, denial of service, escalation of privileges, information disclosure, or data tampering.</p>
 </section>
-<section class="panel">
+<section class="panel bulletin-item" data-search="CVE-2022-31617 CWE-125 NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys), where a local user with basic capabilities can cause an out-of-bounds read, which may lead to code execution, denial of service, escalation of privileges, information disclosure, or data tampering.">
 <h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-31617" target="_blank" rel="noopener">CVE-2022-31617</a> <span class="badge">CWE-125</span></h2>
 <p class="desc">NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys), where a local user with basic capabilities can cause an out-of-bounds read, which may lead to code execution, denial of service, escalation of privileges, information disclosure, or data tampering.</p>
 </section>
-<section class="panel">
+<section class="panel bulletin-item" data-search="CVE-2022-31612 CWE-125 NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys) handler for DxgkDdiEscape, where a local user with basic capabilities can cause an out-of-bounds read, which may lead to a system crash or a leak of internal kernel information.">
 <h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-31612" target="_blank" rel="noopener">CVE-2022-31612</a> <span class="badge">CWE-125</span></h2>
 <p class="desc">NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys) handler for DxgkDdiEscape, where a local user with basic capabilities can cause an out-of-bounds read, which may lead to a system crash or a leak of internal kernel information.</p>
 </section>
-<section class="panel">
+<section class="panel bulletin-item" data-search="CVE-2022-31616 CWE-20 NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys) handler for DxgkDdiEscape, where a local user with basic capabilities can cause an out-of-bounds read, which may lead to denial of service, or information disclosure.">
 <h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-31616" target="_blank" rel="noopener">CVE-2022-31616</a> <span class="badge">CWE-20</span></h2>
 <p class="desc">NVIDIA GPU Display Driver for Windows contains a vulnerability in the kernel mode layer (nvlddmkm.sys) handler for DxgkDdiEscape, where a local user with basic capabilities can cause an out-of-bounds read, which may lead to denial of service, or information disclosure.</p>
 </section>
-<section class="panel">
+<section class="panel bulletin-item" data-search="CVE-2022-31618 CWE-476 NVIDIA vGPU software contains a vulnerability in the Virtual GPU Manager (vGPU plugin), where it can dereference a null pointer, which may lead to denial of service.">
 <h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2022-31618" target="_blank" rel="noopener">CVE-2022-31618</a> <span class="badge">CWE-476</span></h2>
 <p class="desc">NVIDIA vGPU software contains a vulnerability in the Virtual GPU Manager (vGPU plugin), where it can dereference a null pointer, which may lead to denial of service.</p>
 </section>

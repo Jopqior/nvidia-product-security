@@ -64,6 +64,36 @@ body {
   margin-bottom: 16px;
   box-shadow: 0 2px 12px rgba(21, 28, 25, 0.05);
 }
+.search-panel {
+    display: grid;
+    gap: 8px;
+}
+.search-label {
+    font-size: 0.92rem;
+    color: var(--muted);
+}
+.search-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--ink);
+    background: #fff;
+}
+.search-input:focus {
+    outline: 2px solid rgba(0, 95, 115, 0.18);
+    border-color: var(--accent);
+}
+.search-hint {
+    font-size: 0.86rem;
+    color: var(--muted);
+}
+.search-empty {
+    display: none;
+    color: var(--muted);
+    margin-top: 12px;
+}
 .list {
   list-style: none;
   margin: 0;
@@ -102,6 +132,9 @@ a:hover { text-decoration: underline; }
   margin: 8px 0 0;
   line-height: 1.45;
 }
+.search-hidden {
+    display: none !important;
+}
 .footer {
   margin-top: 28px;
   color: var(--muted);
@@ -110,6 +143,51 @@ a:hover { text-decoration: underline; }
 @media (max-width: 700px) {
   .header h1 { font-size: 1.7rem; }
 }
+""".strip()
+
+SCRIPT = """
+<script>
+function normalizeText(value) {
+    return (value || '').toLowerCase().replace(/\\s+/g, ' ').trim();
+}
+
+function attachSearch(inputId, itemSelector, emptyId) {
+    const input = document.getElementById(inputId);
+    if (!input) {
+        return;
+    }
+
+    const emptyState = emptyId ? document.getElementById(emptyId) : null;
+    const items = Array.from(document.querySelectorAll(itemSelector));
+
+    function applyFilter() {
+        const query = normalizeText(input.value);
+        let visibleCount = 0;
+
+        for (const item of items) {
+            const haystack = normalizeText(item.getAttribute('data-search') || item.textContent);
+            const matches = !query || haystack.includes(query);
+            item.classList.toggle('search-hidden', !matches);
+            if (matches) {
+                visibleCount += 1;
+            }
+        }
+
+        if (emptyState) {
+            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+
+    input.addEventListener('input', applyFilter);
+    applyFilter();
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+    attachSearch('home-search', '.home-item', 'home-empty');
+    attachSearch('year-search', '.year-item', 'year-empty');
+    attachSearch('bulletin-search', '.bulletin-item', 'bulletin-empty');
+});
+</script>
 """.strip()
 
 
@@ -158,6 +236,7 @@ def render_page(title: str, body: str, subtitle: str = "") -> str:
         "  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
         f"  <title>{html.escape(title)}</title>\n"
         f"  <style>{CSS}</style>\n"
+        f"  {SCRIPT}\n"
         "</head>\n"
         "<body>\n"
         "  <main class=\"wrapper\">\n"
@@ -204,6 +283,12 @@ def build_bulletin_page(out_dir: Path, year: str, bulletin: str, bulletin_json: 
 
     parts: list[str] = []
     parts.append('<section class="panel"><a href="../index.html">Back to Year</a> | <a href="../../index.html">Home</a></section>')
+    parts.append('<section class="panel search-panel">')
+    parts.append('<label class="search-label" for="bulletin-search">Search CVEs</label>')
+    parts.append('<input id="bulletin-search" class="search-input" type="search" placeholder="Search by CVE, CWE, or description">')
+    parts.append('<div class="search-hint">Filters the CVE cards on this bulletin page.</div>')
+    parts.append('<div id="bulletin-empty" class="search-empty">No matching CVEs found.</div>')
+    parts.append('</section>')
     parts.append('<section class="panel">')
     parts.append(f"<div class=\"kv\">Year: {html.escape(year)} | Bulletin: {html.escape(bulletin)}</div>")
     if updated:
@@ -218,8 +303,9 @@ def build_bulletin_page(out_dir: Path, year: str, bulletin: str, bulletin_json: 
         cwe = str(vuln.get("cwe", {}).get("id", ""))
         desc = cve_description(vuln)
         cve_link = f"https://www.cve.org/CVERecord?id={cve}"
+        search_text = " ".join(part for part in [cve, cwe, desc] if part)
 
-        parts.append('<section class="panel">')
+        parts.append(f'<section class="panel bulletin-item" data-search="{html.escape(search_text)}">')
         parts.append(
             f"<h2 class=\"cve-title\"><a href=\"{html.escape(cve_link)}\" target=\"_blank\" rel=\"noopener\">{html.escape(cve)}</a>"
             + (f" <span class=\"badge\">{html.escape(cwe)}</span>" if cwe else "")
@@ -238,11 +324,18 @@ def build_bulletin_page(out_dir: Path, year: str, bulletin: str, bulletin_json: 
 def build_year_page(out_dir: Path, year: str, bulletin_stats: list[tuple[str, int]]) -> None:
     items: list[str] = []
     items.append('<section class="panel"><a href="../index.html">Back to Home</a></section>')
+    items.append('<section class="panel search-panel">')
+    items.append('<label class="search-label" for="year-search">Search bulletins</label>')
+    items.append('<input id="year-search" class="search-input" type="search" placeholder="Search by bulletin number or CVE count">')
+    items.append('<div class="search-hint">Filters the bulletin list on this year page.</div>')
+    items.append('<div id="year-empty" class="search-empty">No matching bulletins found.</div>')
+    items.append('</section>')
     items.append('<section class="panel">')
     items.append('<ul class="list">')
     for bulletin, cve_count in bulletin_stats:
+        search_text = f"Bulletin {bulletin} {cve_count} CVEs"
         items.append(
-            "<li>"
+            f"<li class=\"year-item\" data-search=\"{html.escape(search_text)}\">"
             f"<a href=\"./{html.escape(bulletin)}/index.html\">Bulletin {html.escape(bulletin)}</a>"
             f"<span class=\"badge\">{cve_count} CVEs</span>"
             "</li>"
@@ -260,11 +353,18 @@ def build_year_page(out_dir: Path, year: str, bulletin_stats: list[tuple[str, in
 
 def build_home_page(out_dir: Path, year_stats: list[tuple[str, int, int]]) -> None:
     items: list[str] = []
+    items.append('<section class="panel search-panel">')
+    items.append('<label class="search-label" for="home-search">Search years</label>')
+    items.append('<input id="home-search" class="search-input" type="search" placeholder="Search by year, bulletin count, or CVE count">')
+    items.append('<div class="search-hint">Filters the year list on the home page.</div>')
+    items.append('<div id="home-empty" class="search-empty">No matching years found.</div>')
+    items.append('</section>')
     items.append('<section class="panel">')
     items.append('<ul class="list">')
     for year, bulletin_count, cve_count in year_stats:
+        search_text = f"{year} {bulletin_count} bulletins {cve_count} CVEs"
         items.append(
-            "<li>"
+            f"<li class=\"home-item\" data-search=\"{html.escape(search_text)}\">"
             f"<a href=\"./{html.escape(year)}/index.html\">{html.escape(year)}</a>"
             f"<span class=\"badge\">{bulletin_count} bulletins</span>"
             f"<span class=\"badge\">{cve_count} CVEs</span>"
@@ -292,6 +392,7 @@ def main() -> int:
     if args.clean and output_root.exists():
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
+    (output_root / ".nojekyll").write_text("", encoding="utf-8")
 
     year_stats: list[tuple[str, int, int]] = []
     total_bulletins = 0
