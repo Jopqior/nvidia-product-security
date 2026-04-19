@@ -40,7 +40,7 @@ body {
   color: var(--ink);
 }
 .wrapper {
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 28px 18px 42px;
 }
@@ -65,45 +65,39 @@ body {
   box-shadow: 0 2px 12px rgba(21, 28, 25, 0.05);
 }
 .search-panel {
-    display: grid;
-    gap: 8px;
+  display: grid;
+  gap: 8px;
 }
 .search-label {
-    font-size: 0.92rem;
-    color: var(--muted);
+  font-size: 0.92rem;
+  color: var(--muted);
 }
 .search-input {
-    width: 100%;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font: inherit;
-    color: var(--ink);
-    background: #fff;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
 }
 .search-input:focus {
-    outline: 2px solid rgba(0, 95, 115, 0.18);
-    border-color: var(--accent);
+  outline: 2px solid rgba(0, 95, 115, 0.18);
+  border-color: var(--accent);
 }
 .search-hint {
-    font-size: 0.86rem;
-    color: var(--muted);
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+.search-count {
+  font-size: 0.92rem;
+  color: var(--muted);
 }
 .search-empty {
-    display: none;
-    color: var(--muted);
-    margin-top: 12px;
+  display: none;
+  color: var(--muted);
+  margin-top: 12px;
 }
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.list li {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
-}
-.list li:last-child { border-bottom: 0; }
 a {
   color: var(--accent);
   text-decoration: none;
@@ -124,16 +118,65 @@ a:hover { text-decoration: underline; }
   font-size: 0.92rem;
   margin-top: 4px;
 }
-.cve-title {
-  margin: 0;
-  font-size: 1.15rem;
-}
-.desc {
-  margin: 8px 0 0;
-  line-height: 1.45;
-}
 .search-hidden {
-    display: none !important;
+  display: none !important;
+}
+.summary {
+  display: grid;
+  gap: 4px;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.result-table {
+  width: 100%;
+  min-width: 1120px;
+  border-collapse: collapse;
+}
+.result-table th,
+.result-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.result-table th {
+  background: #f9fbf8;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: sticky;
+  top: 0;
+}
+.result-table tbody tr:nth-child(even) {
+  background: #fcfcfa;
+}
+.result-table tbody tr:hover {
+  background: #f4f8f4;
+}
+.scope-block,
+.detail-block {
+  display: grid;
+  gap: 6px;
+}
+.detail-summary,
+.muted-line {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.detail-summary {
+  font-size: 0.92rem;
+}
+.count-pill {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid #c7e4ea;
+  border-radius: 999px;
+  padding: 2px 10px;
 }
 .footer {
   margin-top: 28px;
@@ -148,44 +191,48 @@ a:hover { text-decoration: underline; }
 SCRIPT = """
 <script>
 function normalizeText(value) {
-    return (value || '').toLowerCase().replace(/\\s+/g, ' ').trim();
+  return (value || '').toLowerCase().replace(/\\s+/g, ' ').trim();
 }
 
-function attachSearch(inputId, itemSelector, emptyId) {
-    const input = document.getElementById(inputId);
-    if (!input) {
-        return;
+function attachSearchTable(inputId, rowSelector, emptyId, countId) {
+  const input = document.getElementById(inputId);
+  if (!input) {
+    return;
+  }
+
+  const emptyState = emptyId ? document.getElementById(emptyId) : null;
+  const countState = countId ? document.getElementById(countId) : null;
+  const rows = Array.from(document.querySelectorAll(rowSelector));
+
+  function applyFilter() {
+    const query = normalizeText(input.value);
+    let visibleCount = 0;
+
+    for (const row of rows) {
+      const haystack = normalizeText(row.getAttribute('data-search') || row.textContent);
+      const matches = !query || haystack.includes(query);
+      row.classList.toggle('search-hidden', !matches);
+      if (matches) {
+        visibleCount += 1;
+      }
     }
 
-    const emptyState = emptyId ? document.getElementById(emptyId) : null;
-    const items = Array.from(document.querySelectorAll(itemSelector));
-
-    function applyFilter() {
-        const query = normalizeText(input.value);
-        let visibleCount = 0;
-
-        for (const item of items) {
-            const haystack = normalizeText(item.getAttribute('data-search') || item.textContent);
-            const matches = !query || haystack.includes(query);
-            item.classList.toggle('search-hidden', !matches);
-            if (matches) {
-                visibleCount += 1;
-            }
-        }
-
-        if (emptyState) {
-            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
+    if (emptyState) {
+      emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
     }
+    if (countState) {
+      countState.textContent = String(visibleCount);
+    }
+  }
 
-    input.addEventListener('input', applyFilter);
-    applyFilter();
+  input.addEventListener('input', applyFilter);
+  applyFilter();
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-    attachSearch('home-search', '.home-item', 'home-empty');
-    attachSearch('year-search', '.year-item', 'year-empty');
-    attachSearch('bulletin-search', '.bulletin-item', 'bulletin-empty');
+  attachSearchTable('home-search', '.result-row', 'home-empty', 'home-count');
+  attachSearchTable('year-search', '.result-row', 'year-empty', 'year-count');
+  attachSearchTable('bulletin-search', '.result-row', 'bulletin-empty', 'bulletin-count');
 });
 </script>
 """.strip()
@@ -226,6 +273,171 @@ def cve_description(vuln: dict) -> str:
     return ""
 
 
+def bulletin_summary(bulletin_json: dict) -> str:
+    document = bulletin_json.get("document")
+    if not isinstance(document, dict):
+        return ""
+    notes = document.get("notes")
+    if not isinstance(notes, list):
+        return ""
+    for note in notes:
+        if not isinstance(note, dict):
+            continue
+        if str(note.get("category", "")).lower() == "summary":
+            text = note.get("text")
+            if isinstance(text, str):
+                return text
+    return ""
+
+
+def bulletin_title(bulletin_json: dict, bulletin: str) -> str:
+    document = bulletin_json.get("document")
+    if isinstance(document, dict):
+        title = document.get("title")
+        if isinstance(title, str) and title.strip():
+            return title.strip()
+    return f"Bulletin {bulletin}"
+
+
+def bulletin_release_date(bulletin_json: dict) -> str:
+    document = bulletin_json.get("document")
+    if not isinstance(document, dict):
+        return ""
+    tracking = document.get("tracking")
+    if not isinstance(tracking, dict):
+        return ""
+    release_date = tracking.get("current_release_date")
+    return str(release_date) if release_date else ""
+
+
+def collect_years(input_root: Path) -> list[Path]:
+    years: list[Path] = []
+    for path in sorted(input_root.iterdir()):
+        if path.is_dir() and YEAR_RE.match(path.name):
+            years.append(path)
+    return years
+
+
+def collect_bulletins(year_dir: Path) -> list[Path]:
+    bulletins: list[Path] = []
+    for path in sorted(year_dir.iterdir()):
+        if path.is_dir() and BULLETIN_RE.match(path.name):
+            bulletins.append(path)
+    return bulletins
+
+
+def collect_site_data(input_root: Path) -> tuple[dict[str, dict], list[dict]]:
+    site: dict[str, dict] = {}
+    all_records: list[dict] = []
+
+    for year_dir in collect_years(input_root):
+        year = year_dir.name
+        year_entry = {
+            "year": year,
+            "bulletins": [],
+            "bulletin_count": 0,
+            "cve_count": 0,
+        }
+
+        for bulletin_dir in collect_bulletins(year_dir):
+            bulletin = bulletin_dir.name
+            json_path = bulletin_dir / f"{bulletin}.json"
+            if not json_path.exists():
+                continue
+
+            bulletin_json = read_json(json_path)
+            bulletin_entry = {
+                "year": year,
+                "bulletin": bulletin,
+                "title": bulletin_title(bulletin_json, bulletin),
+                "summary": bulletin_summary(bulletin_json),
+                "release_date": bulletin_release_date(bulletin_json),
+                "cves": [],
+                "cve_count": 0,
+            }
+
+            vulnerabilities = bulletin_json.get("vulnerabilities")
+            if not isinstance(vulnerabilities, list):
+                vulnerabilities = []
+
+            for vuln in vulnerabilities:
+                if not isinstance(vuln, dict):
+                    continue
+                bulletin_entry["cves"].append(
+                    {
+                        "year": year,
+                        "bulletin": bulletin,
+                        "title": bulletin_entry["title"],
+                        "summary": bulletin_entry["summary"],
+                        "release_date": bulletin_entry["release_date"],
+                        "cve": str(vuln.get("cve", "Unknown CVE")),
+                        "cwe": str(vuln.get("cwe", {}).get("id", "")),
+                        "description": cve_description(vuln),
+                    }
+                )
+
+            bulletin_entry["cves"].sort(key=lambda item: (item["release_date"], item["cve"]), reverse=True)
+            bulletin_entry["cve_count"] = len(bulletin_entry["cves"])
+            year_entry["bulletins"].append(bulletin_entry)
+
+            for record in bulletin_entry["cves"]:
+                record["bulletin_cve_count"] = bulletin_entry["cve_count"]
+
+        year_entry["bulletins"].sort(key=lambda item: item["bulletin"])
+        year_entry["bulletin_count"] = len(year_entry["bulletins"])
+        year_entry["cve_count"] = sum(item["cve_count"] for item in year_entry["bulletins"])
+
+        for bulletin_entry in year_entry["bulletins"]:
+            for record in bulletin_entry["cves"]:
+                record["year_bulletin_count"] = year_entry["bulletin_count"]
+                record["year_cve_count"] = year_entry["cve_count"]
+                all_records.append(record)
+
+        site[year] = year_entry
+
+    all_records.sort(key=lambda item: (item["release_date"], item["cve"]), reverse=True)
+    return site, all_records
+
+
+def search_terms_for_record(record: dict, scope: str) -> str:
+    terms: list[str] = [
+        record.get("release_date", ""),
+        record.get("cve", ""),
+        record.get("cwe", ""),
+        record.get("description", ""),
+        record.get("title", ""),
+        record.get("summary", ""),
+    ]
+
+    if scope == "home":
+        terms.extend([
+            record.get("year", ""),
+            str(record.get("year_bulletin_count", "")),
+            str(record.get("year_cve_count", "")),
+            record.get("bulletin", ""),
+            str(record.get("bulletin_cve_count", "")),
+        ])
+    elif scope == "year":
+        terms.extend([
+        str(record.get("year_bulletin_count", "")),
+        str(record.get("year_cve_count", "")),
+            str(record.get("bulletin_cve_count", "")),
+            record.get("bulletin", ""),
+        ])
+    else:
+        terms.append(str(record.get("bulletin_cve_count", "")))
+
+    return " ".join(part for part in terms if part)
+
+
+def scope_path(scope: str, year: str, bulletin: str) -> tuple[str, str]:
+    if scope == "home":
+        return f"./{year}/index.html", f"./{year}/{bulletin}/index.html"
+    if scope == "year":
+        return "./index.html", f"./{bulletin}/index.html"
+    return "../index.html", "./index.html"
+
+
 def render_page(title: str, body: str, subtitle: str = "") -> str:
     subtitle_html = f'<p class="subtitle">{subtitle}</p>' if subtitle else ""
     return (
@@ -257,128 +469,143 @@ def write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8", newline="\n")
 
 
-def collect_years(input_root: Path) -> list[Path]:
-    years: list[Path] = []
-    for p in sorted(input_root.iterdir()):
-        if p.is_dir() and YEAR_RE.match(p.name):
-            years.append(p)
-    return years
-
-
-def collect_bulletins(year_dir: Path) -> list[Path]:
-    bulletins: list[Path] = []
-    for p in sorted(year_dir.iterdir()):
-        if p.is_dir() and BULLETIN_RE.match(p.name):
-            bulletins.append(p)
-    return bulletins
-
-
-def build_bulletin_page(out_dir: Path, year: str, bulletin: str, bulletin_json: dict) -> int:
-    title = str(bulletin_json.get("document", {}).get("title", f"Bulletin {bulletin}"))
-    updated = str(bulletin_json.get("document", {}).get("tracking", {}).get("current_release_date", ""))
-
-    vulnerabilities = bulletin_json.get("vulnerabilities")
-    if not isinstance(vulnerabilities, list):
-        vulnerabilities = []
-
-    parts: list[str] = []
-    parts.append('<section class="panel"><a href="../index.html">Back to Year</a> | <a href="../../index.html">Home</a></section>')
-    parts.append('<section class="panel search-panel">')
-    parts.append('<label class="search-label" for="bulletin-search">Search CVEs</label>')
-    parts.append('<input id="bulletin-search" class="search-input" type="search" placeholder="Search by CVE, CWE, or description">')
-    parts.append('<div class="search-hint">Filters the CVE cards on this bulletin page.</div>')
-    parts.append('<div id="bulletin-empty" class="search-empty">No matching CVEs found.</div>')
-    parts.append('</section>')
-    parts.append('<section class="panel">')
-    parts.append(f"<div class=\"kv\">Year: {html.escape(year)} | Bulletin: {html.escape(bulletin)}</div>")
-    if updated:
-        parts.append(f"<div class=\"kv\">Updated: {html.escape(updated)}</div>")
-    parts.append(f"<div class=\"kv\">CVEs in filter: {len(vulnerabilities)}</div>")
-    parts.append("</section>")
-
-    for vuln in vulnerabilities:
-        if not isinstance(vuln, dict):
-            continue
-        cve = str(vuln.get("cve", "Unknown CVE"))
-        cwe = str(vuln.get("cwe", {}).get("id", ""))
-        desc = cve_description(vuln)
-        cve_link = f"https://www.cve.org/CVERecord?id={cve}"
-        search_text = " ".join(part for part in [cve, cwe, desc] if part)
-
-        parts.append(f'<section class="panel bulletin-item" data-search="{html.escape(search_text)}">')
-        parts.append(
-            f"<h2 class=\"cve-title\"><a href=\"{html.escape(cve_link)}\" target=\"_blank\" rel=\"noopener\">{html.escape(cve)}</a>"
-            + (f" <span class=\"badge\">{html.escape(cwe)}</span>" if cwe else "")
-            + "</h2>"
-        )
-        if desc:
-            parts.append(f"<p class=\"desc\">{html.escape(desc)}</p>")
-        parts.append("</section>")
-
-    body = "\n".join(parts)
-    page = render_page(title=title, subtitle=f"Filtered CVE list for bulletin {year}/{bulletin}", body=body)
-    write_text(out_dir / year / bulletin / "index.html", page)
-    return len(vulnerabilities)
-
-
-def build_year_page(out_dir: Path, year: str, bulletin_stats: list[tuple[str, int]]) -> None:
-    items: list[str] = []
-    items.append('<section class="panel"><a href="../index.html">Back to Home</a></section>')
-    items.append('<section class="panel search-panel">')
-    items.append('<label class="search-label" for="year-search">Search bulletins</label>')
-    items.append('<input id="year-search" class="search-input" type="search" placeholder="Search by bulletin number or CVE count">')
-    items.append('<div class="search-hint">Filters the bulletin list on this year page.</div>')
-    items.append('<div id="year-empty" class="search-empty">No matching bulletins found.</div>')
-    items.append('</section>')
-    items.append('<section class="panel">')
-    items.append('<ul class="list">')
-    for bulletin, cve_count in bulletin_stats:
-        search_text = f"Bulletin {bulletin} {cve_count} CVEs"
-        items.append(
-            f"<li class=\"year-item\" data-search=\"{html.escape(search_text)}\">"
-            f"<a href=\"./{html.escape(bulletin)}/index.html\">Bulletin {html.escape(bulletin)}</a>"
-            f"<span class=\"badge\">{cve_count} CVEs</span>"
-            "</li>"
-        )
-    items.append("</ul>")
-    items.append("</section>")
-
-    page = render_page(
-        title=f"{year} Bulletins",
-        subtitle="Bulletins with filtered memory-safety CVEs",
-        body="\n".join(items),
+def render_search_panel(scope: str, total_count: int, hint: str) -> str:
+    input_id = f"{scope}-search"
+    count_id = f"{scope}-count"
+    empty_id = f"{scope}-empty"
+    return (
+        '<section class="panel search-panel">'
+        f'<label class="search-label" for="{input_id}">Search CVEs</label>'
+        f'<input id="{input_id}" class="search-input" type="search" placeholder="Search CVEs in this view">'
+        f'<div class="search-hint">{html.escape(hint)}</div>'
+        f'<div class="search-count">Matching CVEs: <span id="{count_id}">{total_count}</span></div>'
+        f'<div id="{empty_id}" class="search-empty">No matching CVEs found.</div>'
+        '</section>'
     )
-    write_text(out_dir / year / "index.html", page)
 
 
-def build_home_page(out_dir: Path, year_stats: list[tuple[str, int, int]]) -> None:
-    items: list[str] = []
-    items.append('<section class="panel search-panel">')
-    items.append('<label class="search-label" for="home-search">Search years</label>')
-    items.append('<input id="home-search" class="search-input" type="search" placeholder="Search by year, bulletin count, or CVE count">')
-    items.append('<div class="search-hint">Filters the year list on the home page.</div>')
-    items.append('<div id="home-empty" class="search-empty">No matching years found.</div>')
-    items.append('</section>')
-    items.append('<section class="panel">')
-    items.append('<ul class="list">')
-    for year, bulletin_count, cve_count in year_stats:
-        search_text = f"{year} {bulletin_count} bulletins {cve_count} CVEs"
-        items.append(
-            f"<li class=\"home-item\" data-search=\"{html.escape(search_text)}\">"
-            f"<a href=\"./{html.escape(year)}/index.html\">{html.escape(year)}</a>"
-            f"<span class=\"badge\">{bulletin_count} bulletins</span>"
-            f"<span class=\"badge\">{cve_count} CVEs</span>"
-            "</li>"
+def render_results_table(scope: str, records: list[dict]) -> str:
+    if not records:
+        return '<section class="panel">No CVEs found for this view.</section>'
+
+    rows: list[str] = []
+    for record in records:
+        year_href, bulletin_href = scope_path(scope, record["year"], record["bulletin"])
+        cve_href = f"https://www.cve.org/CVERecord?id={record['cve']}"
+        search_text = search_terms_for_record(record, scope)
+        release_date = html.escape(str(record.get("release_date", ""))[:10])
+        bulletin_summary_text = html.escape(record.get("summary", ""))
+        scope_cell = (
+            '<div class="scope-block">'
+            f'<div><a href="{html.escape(year_href)}">{html.escape(record["year"])}</a> '
+            f'<span class="count-pill">{record.get("year_bulletin_count", 0)} bulletins</span></div>'
+            f'<div><a href="{html.escape(bulletin_href)}">{html.escape(record["bulletin"])}</a> '
+            f'<span class="count-pill">{record.get("bulletin_cve_count", 0)} CVEs</span></div>'
+            '</div>'
         )
-    items.append("</ul>")
-    items.append("</section>")
+        detail_cell = (
+            '<div class="detail-block">'
+            f'<div class="detail-summary"><a href="{html.escape(cve_href)}" target="_blank" rel="noopener">{html.escape(record["cve"])}</a></div>'
+            f'<div class="muted-line">{html.escape(record.get("cwe", ""))}</div>'
+            f'<div>{html.escape(record.get("description", ""))}</div>'
+            f'<div class="detail-summary">{html.escape(record.get("title", ""))}</div>'
+            f'<div class="detail-summary">{bulletin_summary_text}</div>'
+            '</div>'
+        )
+        rows.append(
+            f'<tr class="result-row" data-search="{html.escape(search_text)}">'
+            f'<td>{release_date}</td>'
+            f'<td>{scope_cell}</td>'
+            f'<td>{detail_cell}</td>'
+            '</tr>'
+        )
 
-    page = render_page(
-        title="NVIDIA Product Security - Filtered CVEs",
-        subtitle="Memory-safety related CVEs generated from the filter folder",
-        body="\n".join(items),
+    return (
+        '<section class="panel table-panel">'
+        '<div class="table-wrap">'
+        '<table class="result-table">'
+        '<thead><tr>'
+        '<th>Date</th>'
+        '<th>Scope</th>'
+        '<th>CVE / Details</th>'
+        '</tr></thead>'
+        '<tbody>'
+        + ''.join(rows)
+        + '</tbody></table></div></section>'
     )
-    write_text(out_dir / "index.html", page)
+
+
+def build_home_page(out_dir: Path, year_stats: list[dict], records: list[dict]) -> None:
+    total_years = len(year_stats)
+    total_bulletins = sum(item["bulletin_count"] for item in year_stats)
+    total_cves = sum(item["cve_count"] for item in year_stats)
+    body = [
+        '<section class="panel summary">',
+        f'<div class="kv">Years: {total_years}</div>',
+        f'<div class="kv">Bulletins: {total_bulletins}</div>',
+        f'<div class="kv">CVEs: {total_cves}</div>',
+        '</section>',
+        render_search_panel(
+            'home',
+            len(records),
+            'Search by year, bulletin count, CVE count, CVE description, or CWE.',
+        ),
+        render_results_table('home', records),
+    ]
+    page = render_page(
+        title='NVIDIA Product Security - Filtered CVEs',
+        subtitle='Search CVEs across years, bulletins, counts, descriptions, and CWE',
+        body='\n'.join(body),
+    )
+    write_text(out_dir / 'index.html', page)
+
+
+def build_year_page(out_dir: Path, year: str, year_entry: dict, records: list[dict]) -> None:
+    body = [
+    '<section class="panel"><a href="../index.html">Back to Home</a></section>',
+        '<section class="panel summary">',
+        f'<div class="kv">Bulletins: {year_entry["bulletin_count"]}</div>',
+        f'<div class="kv">CVEs: {year_entry["cve_count"]}</div>',
+        '</section>',
+        render_search_panel(
+            'year',
+            len(records),
+            'Search by bulletin count, CVE count, CVE description, or CWE.',
+        ),
+        render_results_table('year', records),
+    ]
+    page = render_page(
+        title=f'{year} Bulletins',
+        subtitle='Search CVEs in this year by count, description, or CWE',
+        body='\n'.join(body),
+    )
+    write_text(out_dir / year / 'index.html', page)
+
+
+def build_bulletin_page(out_dir: Path, year: str, bulletin_entry: dict) -> int:
+    records = bulletin_entry['cves']
+    body = [
+    '<section class="panel"><a href="../index.html">Back to Year</a> | <a href="../../index.html">Home</a></section>',
+        '<section class="panel summary">',
+        f'<div class="kv">Year: {html.escape(year)} | Bulletin: {html.escape(bulletin_entry["bulletin"])}</div>',
+        f'<div class="kv">Title: {html.escape(bulletin_entry["title"])}</div>',
+        f'<div class="kv">Updated: {html.escape(bulletin_entry["release_date"])}</div>' if bulletin_entry['release_date'] else '',
+        f'<div class="kv">CVEs: {bulletin_entry["cve_count"]}</div>',
+        '</section>',
+        render_search_panel(
+            'bulletin',
+            len(records),
+            'Search by CVE count, CVE description, or CWE.',
+        ),
+        render_results_table('bulletin', records),
+    ]
+    page = render_page(
+        title=bulletin_entry['title'],
+        subtitle=f'Search CVEs in bulletin {year}/{bulletin_entry["bulletin"]} by description or CWE',
+        body='\n'.join(part for part in body if part),
+    )
+    write_text(out_dir / year / bulletin_entry['bulletin'] / 'index.html', page)
+    return len(records)
 
 
 def main() -> int:
@@ -392,33 +619,24 @@ def main() -> int:
     if args.clean and output_root.exists():
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
-    (output_root / ".nojekyll").write_text("", encoding="utf-8")
+    (output_root / '.nojekyll').write_text('', encoding='utf-8')
 
-    year_stats: list[tuple[str, int, int]] = []
-    total_bulletins = 0
-    total_cves = 0
+    site, all_records = collect_site_data(input_root)
+    year_stats = list(site.values())
 
-    for year_dir in collect_years(input_root):
-        year = year_dir.name
-        bulletin_stats: list[tuple[str, int]] = []
+    for year in sorted(site):
+        year_entry = site[year]
+        year_records = [record for bulletin in year_entry['bulletins'] for record in bulletin['cves']]
+        year_records.sort(key=lambda item: (item['release_date'], item['cve']), reverse=True)
+        build_year_page(output_root, year, year_entry, year_records)
 
-        for bulletin_dir in collect_bulletins(year_dir):
-            bulletin = bulletin_dir.name
-            json_path = bulletin_dir / f"{bulletin}.json"
-            if not json_path.exists():
-                continue
+        for bulletin_entry in year_entry['bulletins']:
+            build_bulletin_page(output_root, year, bulletin_entry)
 
-            data = read_json(json_path)
-            cve_count = build_bulletin_page(output_root, year, bulletin, data)
-            bulletin_stats.append((bulletin, cve_count))
-            total_bulletins += 1
-            total_cves += cve_count
+    build_home_page(output_root, year_stats, all_records)
 
-        if bulletin_stats:
-            build_year_page(output_root, year, bulletin_stats)
-            year_stats.append((year, len(bulletin_stats), sum(c for _, c in bulletin_stats)))
-
-    build_home_page(output_root, year_stats)
+    total_bulletins = sum(year_entry['bulletin_count'] for year_entry in year_stats)
+    total_cves = sum(year_entry['cve_count'] for year_entry in year_stats)
 
     print(f"Generated site: {output_root}")
     print(f"Years: {len(year_stats)}")
@@ -427,5 +645,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())

@@ -21,7 +21,7 @@ body {
   color: var(--ink);
 }
 .wrapper {
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 28px 18px 42px;
 }
@@ -46,45 +46,39 @@ body {
   box-shadow: 0 2px 12px rgba(21, 28, 25, 0.05);
 }
 .search-panel {
-    display: grid;
-    gap: 8px;
+  display: grid;
+  gap: 8px;
 }
 .search-label {
-    font-size: 0.92rem;
-    color: var(--muted);
+  font-size: 0.92rem;
+  color: var(--muted);
 }
 .search-input {
-    width: 100%;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font: inherit;
-    color: var(--ink);
-    background: #fff;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
 }
 .search-input:focus {
-    outline: 2px solid rgba(0, 95, 115, 0.18);
-    border-color: var(--accent);
+  outline: 2px solid rgba(0, 95, 115, 0.18);
+  border-color: var(--accent);
 }
 .search-hint {
-    font-size: 0.86rem;
-    color: var(--muted);
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+.search-count {
+  font-size: 0.92rem;
+  color: var(--muted);
 }
 .search-empty {
-    display: none;
-    color: var(--muted);
-    margin-top: 12px;
+  display: none;
+  color: var(--muted);
+  margin-top: 12px;
 }
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.list li {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
-}
-.list li:last-child { border-bottom: 0; }
 a {
   color: var(--accent);
   text-decoration: none;
@@ -105,16 +99,65 @@ a:hover { text-decoration: underline; }
   font-size: 0.92rem;
   margin-top: 4px;
 }
-.cve-title {
-  margin: 0;
-  font-size: 1.15rem;
-}
-.desc {
-  margin: 8px 0 0;
-  line-height: 1.45;
-}
 .search-hidden {
-    display: none !important;
+  display: none !important;
+}
+.summary {
+  display: grid;
+  gap: 4px;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.result-table {
+  width: 100%;
+  min-width: 1120px;
+  border-collapse: collapse;
+}
+.result-table th,
+.result-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.result-table th {
+  background: #f9fbf8;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: sticky;
+  top: 0;
+}
+.result-table tbody tr:nth-child(even) {
+  background: #fcfcfa;
+}
+.result-table tbody tr:hover {
+  background: #f4f8f4;
+}
+.scope-block,
+.detail-block {
+  display: grid;
+  gap: 6px;
+}
+.detail-summary,
+.muted-line {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.detail-summary {
+  font-size: 0.92rem;
+}
+.count-pill {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid #c7e4ea;
+  border-radius: 999px;
+  padding: 2px 10px;
 }
 .footer {
   margin-top: 28px;
@@ -126,44 +169,48 @@ a:hover { text-decoration: underline; }
 }</style>
   <script>
 function normalizeText(value) {
-    return (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-function attachSearch(inputId, itemSelector, emptyId) {
-    const input = document.getElementById(inputId);
-    if (!input) {
-        return;
+function attachSearchTable(inputId, rowSelector, emptyId, countId) {
+  const input = document.getElementById(inputId);
+  if (!input) {
+    return;
+  }
+
+  const emptyState = emptyId ? document.getElementById(emptyId) : null;
+  const countState = countId ? document.getElementById(countId) : null;
+  const rows = Array.from(document.querySelectorAll(rowSelector));
+
+  function applyFilter() {
+    const query = normalizeText(input.value);
+    let visibleCount = 0;
+
+    for (const row of rows) {
+      const haystack = normalizeText(row.getAttribute('data-search') || row.textContent);
+      const matches = !query || haystack.includes(query);
+      row.classList.toggle('search-hidden', !matches);
+      if (matches) {
+        visibleCount += 1;
+      }
     }
 
-    const emptyState = emptyId ? document.getElementById(emptyId) : null;
-    const items = Array.from(document.querySelectorAll(itemSelector));
-
-    function applyFilter() {
-        const query = normalizeText(input.value);
-        let visibleCount = 0;
-
-        for (const item of items) {
-            const haystack = normalizeText(item.getAttribute('data-search') || item.textContent);
-            const matches = !query || haystack.includes(query);
-            item.classList.toggle('search-hidden', !matches);
-            if (matches) {
-                visibleCount += 1;
-            }
-        }
-
-        if (emptyState) {
-            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
+    if (emptyState) {
+      emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
     }
+    if (countState) {
+      countState.textContent = String(visibleCount);
+    }
+  }
 
-    input.addEventListener('input', applyFilter);
-    applyFilter();
+  input.addEventListener('input', applyFilter);
+  applyFilter();
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-    attachSearch('home-search', '.home-item', 'home-empty');
-    attachSearch('year-search', '.year-item', 'year-empty');
-    attachSearch('bulletin-search', '.bulletin-item', 'bulletin-empty');
+  attachSearchTable('home-search', '.result-row', 'home-empty', 'home-count');
+  attachSearchTable('year-search', '.result-row', 'year-empty', 'year-count');
+  attachSearchTable('bulletin-search', '.result-row', 'bulletin-empty', 'bulletin-count');
 });
 </script>
 </head>
@@ -171,24 +218,17 @@ window.addEventListener('DOMContentLoaded', function () {
   <main class="wrapper">
     <header class="header">
       <h1>Security Bulletin: NVIDIA CUDA Toolkit - August 2024</h1>
-      <p class="subtitle">Filtered CVE list for bulletin 2024/5564</p>
+      <p class="subtitle">Search CVEs in bulletin 2024/5564 by description or CWE</p>
     </header>
     <section class="panel"><a href="../index.html">Back to Year</a> | <a href="../../index.html">Home</a></section>
-<section class="panel search-panel">
-<label class="search-label" for="bulletin-search">Search CVEs</label>
-<input id="bulletin-search" class="search-input" type="search" placeholder="Search by CVE, CWE, or description">
-<div class="search-hint">Filters the CVE cards on this bulletin page.</div>
-<div id="bulletin-empty" class="search-empty">No matching CVEs found.</div>
-</section>
-<section class="panel">
+<section class="panel summary">
 <div class="kv">Year: 2024 | Bulletin: 5564</div>
+<div class="kv">Title: Security Bulletin: NVIDIA CUDA Toolkit - August 2024</div>
 <div class="kv">Updated: 2024-08-29T00:00:00Z</div>
-<div class="kv">CVEs in filter: 1</div>
+<div class="kv">CVEs: 1</div>
 </section>
-<section class="panel bulletin-item" data-search="CVE-2024-0109 CWE-125 NVIDIA CUDA Toolkit contains a vulnerability in command `cuobjdump` where a user may cause a crash by passing in a malformed ELF file. A successful exploit of this vulnerability may cause an out of bounds read in the unprivileged process memory which could lead to a limited denial of service.	">
-<h2 class="cve-title"><a href="https://www.cve.org/CVERecord?id=CVE-2024-0109" target="_blank" rel="noopener">CVE-2024-0109</a> <span class="badge">CWE-125</span></h2>
-<p class="desc">NVIDIA CUDA Toolkit contains a vulnerability in command `cuobjdump` where a user may cause a crash by passing in a malformed ELF file. A successful exploit of this vulnerability may cause an out of bounds read in the unprivileged process memory which could lead to a limited denial of service.	</p>
-</section>
+<section class="panel search-panel"><label class="search-label" for="bulletin-search">Search CVEs</label><input id="bulletin-search" class="search-input" type="search" placeholder="Search CVEs in this view"><div class="search-hint">Search by CVE count, CVE description, or CWE.</div><div class="search-count">Matching CVEs: <span id="bulletin-count">1</span></div><div id="bulletin-empty" class="search-empty">No matching CVEs found.</div></section>
+<section class="panel table-panel"><div class="table-wrap"><table class="result-table"><thead><tr><th>Date</th><th>Scope</th><th>CVE / Details</th></tr></thead><tbody><tr class="result-row" data-search="2024-08-29T00:00:00Z CVE-2024-0109 CWE-125 NVIDIA CUDA Toolkit contains a vulnerability in command `cuobjdump` where a user may cause a crash by passing in a malformed ELF file. A successful exploit of this vulnerability may cause an out of bounds read in the unprivileged process memory which could lead to a limited denial of service.	 Security Bulletin: NVIDIA CUDA Toolkit - August 2024 NVIDIA has released a software update for NVIDIA® CUDA® Toolkit. To protect your system, download and install this software update from the &lt;a href=&quot;https://developer.nvidia.com/cuda-toolkit&quot;&gt;CUDA Toolkit Downloads&lt;/a&gt; page. 1"><td>2024-08-29</td><td><div class="scope-block"><div><a href="../index.html">2024</a> <span class="count-pill">10 bulletins</span></div><div><a href="./index.html">5564</a> <span class="count-pill">1 CVEs</span></div></div></td><td><div class="detail-block"><div class="detail-summary"><a href="https://www.cve.org/CVERecord?id=CVE-2024-0109" target="_blank" rel="noopener">CVE-2024-0109</a></div><div class="muted-line">CWE-125</div><div>NVIDIA CUDA Toolkit contains a vulnerability in command `cuobjdump` where a user may cause a crash by passing in a malformed ELF file. A successful exploit of this vulnerability may cause an out of bounds read in the unprivileged process memory which could lead to a limited denial of service.	</div><div class="detail-summary">Security Bulletin: NVIDIA CUDA Toolkit - August 2024</div><div class="detail-summary">NVIDIA has released a software update for NVIDIA® CUDA® Toolkit. To protect your system, download and install this software update from the &lt;a href=&quot;https://developer.nvidia.com/cuda-toolkit&quot;&gt;CUDA Toolkit Downloads&lt;/a&gt; page.</div></div></td></tr></tbody></table></div></section>
     <footer class="footer">Generated from filter folder for GitHub Pages.</footer>
   </main>
 </body>
